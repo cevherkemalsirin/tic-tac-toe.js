@@ -1,0 +1,89 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body{
+    background-color: black;
+}
+
+.Container, .boardContainer{
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black;
+}
+
+.Container.hidden{
+    display: none;
+}
+
+.StartGame{
+    width: 150px;
+    height: 50px;
+    background-color: red;
+    border: 2px white solid;
+    border-radius: 20px;
+}
+
+.StartGame:hover{
+    border:3px orange solid;
+}
+
+.StartText{
+    font-weight: bold;
+    font-size: 2rem;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    color:white;
+}
+
+
+.boardContainer{
+
+}
+
+.board{
+    width: 640px;
+    height: 640px;
+    display: grid;
+    grid-template-rows: repeat(3,1fr);
+}
+
+.row{
+  
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+}
+
+.row.top{
+    border-top: 10px red ridge;
+    border-left: 10px red ridge;
+    border-right: 10px red ridge;
+}
+
+.row.mid{
+    border:10px red ridge;
+}
+
+.row.bottom{
+    border-left: 10px red ridge;
+    border-right: 10px red ridge;
+    border-bottom: 10px red ridge;
+}
+
+.square.mid{
+    border-left: 10px red ridge;
+    border-right: 10px red ridge;
+    box-sizing: content-box;
+    
+}
+
+.square{
+    width: 200px;
+    height: 200px;
+
+
+}
