@@ -21,7 +21,28 @@ body{
     display: none;
 }
 
+.StartSection{
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.StartSection > .inputs{
+    display: flex;
+    gap: 30px;
+}
+
+.Container .playerName{
+    color: wheat;
+}
+
+.Container .playerName > .pName{
+    height: 25px;
+}
+
+
 .StartGame{
+    align-self: center;
     width: 150px;
     height: 50px;
     background-color: red;
@@ -41,8 +62,8 @@ body{
 }
 
 
-.boardContainer{
-
+.boardContainer.hidden{
+    display: none;
 }
 
 .board{
@@ -84,6 +105,5 @@ body{
 .square{
     width: 200px;
     height: 200px;
-
 
 }

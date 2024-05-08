@@ -11,14 +11,24 @@
 
 <body>
     <div class="Container">
-        <button class="StartGame">
-            <p class="StartText">
-                Start
-            </p>
-        </button>
+        <div class="StartSection">
+            <form action="#" class="inputs">
+                <label for="player1" class="playerName 1"> Player 1 Name:
+                    <input type="text" class="pName" id="player1" name="player1Name" required>
+                </label>
+                <label for="player2" class="playerName 2"> Player 2 Name:
+                    <input type="text" class="pName" id="player2" name="player2Name" required>
+                </label>
+            </form>
+            <button class="StartGame">
+                <p class="StartText">
+                    Start
+                </p>
+            </button>
+        </div>
     </div>
 
-    <div class="boardContainer">
+    <div class="boardContainer hidden">
         <div class="board">
             <div class="row top">
                 <div class="square" data-num="1"></div>
