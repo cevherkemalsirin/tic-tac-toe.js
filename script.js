@@ -18,23 +18,17 @@ startBtn.addEventListener("click", (e)=>{
 boardContainer.addEventListener("click", (e)=>{
     if(e.target.classList.contains("square"))
     {
-        GameController.PlayTurn();
+        console.log(e.target);
+        ScreenController.PlaceMark(e.target);
     }
-})
+});
 
 
  function Cell()
 {
-    /*
-    const cellType = Object.freeze({
-        X : "X",
-        O : "O",
-        empty : " "
-    });*/
+    let cellValue = " ";
 
-    const cellValue = " ";
-
-    const GetValue = () => {cellValue;};
+    const GetValue = () => { return cellValue;};
 
     const AssignValue = (mark) =>{ cellValue = mark;};
 
@@ -44,12 +38,22 @@ boardContainer.addEventListener("click", (e)=>{
 
 const Gameboard = (function(){ 
 
-    const board = new Array(3).fill().map(()=> new Array(3).fill(Cell().GetValue()));
-
     const gridNum = 3;
+    const board = [];
+//fill the board
+    for (let r = 0; r < gridNum; r++) {
+        const row = [];
+        for (let c = 0; c < gridNum; c++) {
+            row.push(Cell());
+        }
+        board.push(row);
+    }
+
+    const GetGridNum = () => {return gridNum;};
 
     const MarkBoard = (player, row, collumn) => {
-        board[row][collumn].AssignValue(player.GetMark());
+        board[row][collumn].AssignValue(player.mark);
+        ScreenController.MarkCellWith(GameController.GetCurrentPlayer().mark);
     };
 
 //doin this way in case We need more than 3x3 grid otherwise we could just write 8 checks (2n+2) 2*3+2
@@ -99,12 +103,14 @@ const Gameboard = (function(){
 
     FillChecks();
 
-    const GetBoard = () =>{board};
-
+    const GetBoard = () =>{return board};
+ 
     return {
         GetBoard,
         MarkBoard,
         checks,
+        GetGridNum,
+
     };
 
 })();
@@ -120,7 +126,10 @@ const GameController = (function(){
 
     const players = [];
     const board = Gameboard.GetBoard();
+    let currentPlayer = null;
 
+    let steps = 0;
+    const n = Gameboard.GetGridNum(); 
     const InitPlayers = ()=>{
         const Player1 = new Player(nameInput1.value, "X");
         const Player2 = new Player(nameInput2.value, "O");
@@ -130,12 +139,13 @@ const GameController = (function(){
 
     const InitGame = () =>{
         InitPlayers();
+        currentPlayer = players[0];
     };
 
-    let currentPlayer = players[0];
+      
 
     const GetCurrentPlayer = ()=>{
-        currentPlayer;
+      return  currentPlayer;
     };
     
     const SwitchPlayers = () =>{
@@ -143,25 +153,65 @@ const GameController = (function(){
     };
 
     const CheckWin = () => {
-        const mark = currentPlayer.GetMark();
-        const checks = board.checks;
-        for (let c = 0; c < checks.checkNum; c++ )
+        const mark = currentPlayer.mark;
+        const checks = Gameboard.checks;
+
+        for (let x = 0; x < checks.checkNum; x++)
         {
-            //write checks here
+            let r = checks.rowStart[x], c = checks.colStart[x], rd = checks.rowDirection[x], cd = checks.colDirection[x];
+            let count = 0;
+            if(board[r][c].GetValue() === " ") continue;
+
+            for(let steps = 0; steps < n; steps++)
+            {
+                if(mark === board[r][c])
+                {
+                    count++;
+                    r += rd;
+                    c += cd;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if(count ===  n)
+            {
+                console.log(currentPlayer + " Has won ");
+                return true;
+            }
+            //whole grid is full
+           if(steps === n ** 2)
+           {
+            console.log( "it is tie ");
+            return true;
+           }
         }
+        return false;
+    }; 
 
-    };
 
-    const PlayTurn = (row, col) =>{
-        if(board[row][col] === " ")
+    const PlayTurn = (index) =>{
+        let row = Math.floor(index / n);
+        let col = index % n;
+       
+        if(board[row][col].GetValue()  === " ")
         {
-            board.MarkBoard(currentPlayer, row, col);
-            CheckWin();
+            steps++;
+            console.log("steps");
+            Gameboard.MarkBoard(currentPlayer, row, col);
+            ScreenController.UpdateScreen();
+            if(CheckWin())
+            {
+                //do winning
+            }
             SwitchPlayers();
+            return true;
         }
         else
         {
-
+            return false;
         }
     };
 
@@ -170,15 +220,51 @@ const GameController = (function(){
 })();
 
 
-function PlaceMark(theSquare)
+const ScreenController = (function ()
 {
-    if(Game.currentPlayer)
+
+const board = Gameboard.GetBoard();
+let currentCellElement = null;
+    const PlaceMark = (theSquare) =>
     {
-        theSquare.style.cssText = 'background-image: url("./images/X.png");background-position: center; background-size:250px 250px;background-repeat: no-repeat;';
+        currentCellElement = theSquare;
+        //returns true if we were able to put a mark there
+        let index = Number(currentCellElement.getAttribute("data-num")) - 1;
+       // console.log(index);
+        if(GameController.PlayTurn(index))
+        {
+           
+        }
+        else
+        {
+            
+        }
     }
-    else
+
+    const UpdateScreen = (theSquare) =>{
+    };
+
+    const MarkCellWith = (mark) =>
     {
-        theSquare.style.cssText = 'background-image: url("./images/O.png");background-position: center; background-size:150px 150px;background-repeat: no-repeat;';
-    }
-}
+        console.log(mark);
+        if(mark === "X")
+        {
+            
+            currentCellElement.style.cssText = 'background-image: url("./images/X.png");background-position: center; background-size:250px 250px;background-repeat: no-repeat;';
+           
+        }
+        else
+        {
+            currentCellElement.style.cssText = 'background-image: url("./images/O.png");background-position: center; background-size:150px 150px;background-repeat: no-repeat;';
+        }
+    };
+
+    return {UpdateScreen,
+            PlaceMark,
+            MarkCellWith
+    };
+})();
+
+
+
 
