@@ -1,6 +1,8 @@
 const startBtn = document.querySelector(".StartGame");
+const replayBtn = document.querySelector(".replayBtn");
 const container = document.querySelector(".Container");
 const boardContainer = document.querySelector(".boardContainer");
+const alertText  = document.querySelector(".alert");
 const nameInput1 = document.querySelector("#player1");
 const nameInput2 = document.querySelector("#player2");
 
@@ -13,6 +15,10 @@ startBtn.addEventListener("click", (e)=>{
         GameController.InitGame();
     }
 
+});
+
+replayBtn.addEventListener("click", ()=>{
+    GameController.Replay();
 });
 
 boardContainer.addEventListener("click", (e)=>{
@@ -39,15 +45,20 @@ boardContainer.addEventListener("click", (e)=>{
 const Gameboard = (function(){ 
 
     const gridNum = 3;
-    const board = [];
+    let board = [];
 //fill the board
-    for (let r = 0; r < gridNum; r++) {
-        const row = [];
-        for (let c = 0; c < gridNum; c++) {
-            row.push(Cell());
+    const ResetBoard = () =>{
+        board = [];
+        for (let r = 0; r < gridNum; r++) {
+            const row = [];
+            for (let c = 0; c < gridNum; c++) {
+                row.push(Cell());
+            }
+            board.push(row);
         }
-        board.push(row);
-    }
+    };
+
+    ResetBoard();
 
     const GetGridNum = () => {return gridNum;};
 
@@ -110,7 +121,7 @@ const Gameboard = (function(){
         MarkBoard,
         checks,
         GetGridNum,
-
+        ResetBoard,
     };
 
 })();
@@ -125,10 +136,10 @@ const Gameboard = (function(){
 const GameController = (function(){
 
     const players = [];
-    const board = Gameboard.GetBoard();
+    let board = Gameboard.GetBoard();
     let currentPlayer = null;
-
     let steps = 0;
+
     const n = Gameboard.GetGridNum(); 
     const InitPlayers = ()=>{
         const Player1 = new Player(nameInput1.value, "X");
@@ -160,12 +171,14 @@ const GameController = (function(){
         {
             let r = checks.rowStart[x], c = checks.colStart[x], rd = checks.rowDirection[x], cd = checks.colDirection[x];
             let count = 0;
+            const winnerIndex = [];
             if(board[r][c].GetValue() === " ") continue;
 
-            for(let steps = 0; steps < n; steps++)
+            for(let x = 0; x < n; x++)
             {
-                if(mark === board[r][c])
+                if(mark === board[r][c].GetValue())
                 {
+                    winnerIndex.push((r*n + c) + 1);
                     count++;
                     r += rd;
                     c += cd;
@@ -175,18 +188,18 @@ const GameController = (function(){
                     break;
                 }
             }
-
+            console.log(count);
             if(count ===  n)
-            {
-                console.log(currentPlayer + " Has won ");
+            {  
+                for(let i = 0; i <n; i++)
+                    {
+                        const wonCell = document.querySelector(`.square[data-num="${winnerIndex[i]}"]`);
+                        ScreenController.ChangeCellBackground(wonCell,"rgb(0, 158, 8)");
+                    }
                 return true;
             }
             //whole grid is full
-           if(steps === n ** 2)
-           {
-            console.log( "it is tie ");
-            return true;
-           }
+
         }
         return false;
     }; 
@@ -199,12 +212,16 @@ const GameController = (function(){
         if(board[row][col].GetValue()  === " ")
         {
             steps++;
-            console.log("steps");
             Gameboard.MarkBoard(currentPlayer, row, col);
-            ScreenController.UpdateScreen();
             if(CheckWin())
             {
-                //do winning
+                alertText.textContent = `${currentPlayer.name} has won!!!`;
+                ScreenController.SetCanClick(false);
+            }
+            else if(steps === n*n)
+            {
+                alertText.textContent = `TIE, Noone Won !!!`;
+                ScreenController.SetCanClick(false);
             }
             SwitchPlayers();
             return true;
@@ -215,53 +232,100 @@ const GameController = (function(){
         }
     };
 
-    return {InitGame, GetCurrentPlayer, SwitchPlayers, PlayTurn};
+
+    const Replay = () => {
+        steps = 0;
+        Gameboard.ResetBoard();
+        board = Gameboard.GetBoard();
+        ScreenController.ResetScreen();
+        ScreenController.SetCanClick(true);
+        alertText.textContent = "";
+    };
+
+    return {InitGame, GetCurrentPlayer, SwitchPlayers, PlayTurn, Replay};
 
 })();
 
 
 const ScreenController = (function ()
 {
+    let board = Gameboard.GetBoard();
+    let currentCellElement = null;
+    let canClick = true;
 
-const board = Gameboard.GetBoard();
-let currentCellElement = null;
+    const SetCanClick = (isClickable) =>
+    {
+        canClick = isClickable;
+    };
+
+
     const PlaceMark = (theSquare) =>
     {
-        currentCellElement = theSquare;
+        if(canClick)
+        {
+            currentCellElement = theSquare;
+            let index = Number(currentCellElement.getAttribute("data-num")) - 1;
         //returns true if we were able to put a mark there
-        let index = Number(currentCellElement.getAttribute("data-num")) - 1;
-       // console.log(index);
-        if(GameController.PlayTurn(index))
-        {
-           
+
+            if(!GameController.PlayTurn(index))
+            {
+                AlertScreen("The Place is Already Taken!!!", 1000);
+            }
         }
-        else
-        {
-            
-        }
+
+
     }
 
-    const UpdateScreen = (theSquare) =>{
+    const ResetScreen = () =>{
+        let n = Gameboard.GetGridNum();
+        for(let r = 0; r<n; r++)
+            {
+                for(let c=0; c<n; c++)
+                    {
+                        board = Gameboard.GetBoard();
+                        let index = (r * n) + c + 1;
+                        currentCellElement = document.querySelector(`.square[data-num="${index}"`);
+                        console.log(board[r][c].GetValue());
+                        MarkCellWith(board[r][c].GetValue());
+                    }
+            }
+    };
+
+    const ChangeCellBackground = (cell,color) =>
+    {
+        cell.style.backgroundColor = color;
+    };
+    
+    const AlertScreen = (message, miliSecondsText) => {
+            ChangeCellBackground(currentCellElement,"rgb(158, 0, 8)");
+            setTimeout(()=>{ currentCellElement.style.backgroundColor = "transparent";}, 200);   
+            alertText.textContent = message;
+            setTimeout(()=>{ alertText.textContent = "";}, miliSecondsText);   
     };
 
     const MarkCellWith = (mark) =>
     {
-        console.log(mark);
+       
         if(mark === "X")
         {
             
             currentCellElement.style.cssText = 'background-image: url("./images/X.png");background-position: center; background-size:250px 250px;background-repeat: no-repeat;';
            
         }
-        else
+        else if(mark === "O")
         {
             currentCellElement.style.cssText = 'background-image: url("./images/O.png");background-position: center; background-size:150px 150px;background-repeat: no-repeat;';
         }
+        else{
+            currentCellElement.style.cssText = "";
+        }
     };
 
-    return {UpdateScreen,
+    return {ResetScreen,
             PlaceMark,
-            MarkCellWith
+            MarkCellWith,
+            ChangeCellBackground,
+            SetCanClick,
     };
 })();
 

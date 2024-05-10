@@ -17,7 +17,7 @@ body{
     background-color: black;
 }
 
-.Container.hidden{
+.hidden{
     display: none;
 }
 
@@ -41,7 +41,7 @@ body{
 }
 
 
-.StartGame{
+.StartGame, .replayBtn{
     align-self: center;
     width: 150px;
     height: 50px;
@@ -50,11 +50,11 @@ body{
     border-radius: 20px;
 }
 
-.StartGame:hover{
+.StartGame:hover , .replayBtn:hover{
     border:3px orange solid;
 }
 
-.StartText{
+.StartText, .replayText{
     font-weight: bold;
     font-size: 2rem;
     font-family: Georgia, 'Times New Roman', Times, serif;
@@ -62,8 +62,16 @@ body{
 }
 
 
-.boardContainer.hidden{
-    display: none;
+
+.boardContainer{
+    display: flex;
+    flex-direction: column;
+    gap:50px;
+}
+
+.alert{
+    color:white;
+    background-color: rgba(255, 2, 2, 0.4);
 }
 
 .board{
